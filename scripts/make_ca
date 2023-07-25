@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#==================================================================================================
+#title           :make_ca
+#description     :generate a certificate authority using openssl
+#author          :Wesley van Tilburg
+#date            :07/05/2023
+#version         :1.0
+#==================================================================================================
+
+
+#Make sure openssl is installed 
+if ! command -v "openssl" > /dev/null; then printf "%s\n" "Openssl is required for this script"; exit 1; fi
+
+#generate the ca
+openssl genrsa -out ./ca.key 4096
+openssl req -new -x509 -sha256 -key ./ca.key -out ./ca.crt -days 365
+
+
+
