@@ -1,0 +1,30 @@
+#!/bin/sh
+
+#==================================================================================================
+#title           :make_cert
+#description     :generate a certificate using openssl
+#author          :Wesley van Tilburg
+#date            :07/05/2023
+#version         :1.0
+#==================================================================================================
+
+
+#Make sure openssl is installed 
+if ! command -v "openssl" > /dev/null; then printf "%s\n" "Openssl is required for this script"; exit 1; fi
+
+#Make sure the base config is present
+if ! [ -f "./base.cnf" ]; then printf "%s\n" "base config is missing"; exit 1; fi
+
+if ! [ "$#" -eq 1 ]; then printf "%s\n" "Usage: make_cert <hostname>"; exit 1; fi
+hostname="$1"
+
+cat "./base.cnf" | sed "s/localhost/$hostname/g" > ./"$hostname".cnf
+
+
+#generate the crt
+openssl genrsa -out "$hostname".key  2048
+openssl req -new -key "$hostname".key -out "$hostname".csr -config "$hostname".cnf
+openssl x509 -req -in "$hostname".csr -CA ./ca.crt -CAkey ./ca.key -CAcreateserial -out "$hostname".crt -days 365 -extensions req_ext -extfile ./"$hostname".cnf
+
+#cleanup
+rm "$hostname".cnf
